@@ -1,8 +1,9 @@
 from openai import OpenAI
 from dotenv import load_dotenv
 import os
-from tools import get_lyrics
+from tools import get_lyrics_deduplicated
 import json
+import re
 
 load_dotenv()
 
@@ -10,25 +11,25 @@ OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
 client = OpenAI(api_key=OPENAI_API_KEY)
 
-tools = [{
-    "type": "function",
-    "name": "get_lyrics",
-    "description": "Get lyrics of a song for translation.",
-    "parameters": {
-        "type": "object",
-        "properties": {
-            "artist_name": {
-                "type": "string",
-                "description": "Name of the artist of the song."
-            },
-            "song_name": {
-                "type": "string",
-                "description": "Name of the song."
-            },
-        },
-        "required": ["artist_name", "song_name"]
-    },
-}]
+# tools = [{
+#     "type": "function",
+#     "name": "get_lyrics",
+#     "description": "Get lyrics of a song for translation.",
+#     "parameters": {
+#         "type": "object",
+#         "properties": {
+#             "artist_name": {
+#                 "type": "string",
+#                 "description": "Name of the artist of the song."
+#             },
+#             "song_name": {
+#                 "type": "string",
+#                 "description": "Name of the song."
+#             },
+#         },
+#         "required": ["artist_name", "song_name"]
+#     },
+# }]
 
 
 instructions = """Your job is to translate the lyrics of Arabic songs into English for language learning purposes. You should be culturally relevant and beginner-friendly.
@@ -132,29 +133,7 @@ Base: "الدنيا" (id-dunya) (the world)
 </wtranslation>
 """
 
-
-# input_list = [
-#     {"role": "user", "content": lyrics}
-# ]
-
-# response = client.responses.create(
-#     model="gpt-4.1",
-#     instructions=instructions,
-#     input=input_list,
-#     store=False
-# )
-
-# translated_output = response.output_text
-
-# dialect = translated_output.split("<dialect>")[1].split("</dialect>")[0]
-# ltranslation = translated_output.split("<ltranslation>")[1].split("</ltranslation>")[0]
-# wtranslation = translated_output.split("<wtranslation>")[1].split("</wtranslation>")[0]
-
-# translated_output = dialect + "\n" + ltranslation + "\n" + wtranslation
-
-context = ""
-
-instructions_for_q_and_a = f"""Your job is to answer the user's queries regarding a song's translation. You should be culturally relevant and beginner-friendly.
+instructions_for_q_and_a = """Your job is to answer the user's queries regarding a song's translation. You should be culturally relevant and beginner-friendly.
 
 Do not try to guess or interpret the name of the song, just answer the question about the given lyrics. Remember that an English word may be written in Arabic script; in this case, you should consider the English meaning of the word. For code-switched lyrics, the words may appear out of order due to RTL and LTR; hence, consider how the words fit together. Always provide the transliteration when referring to Arabic words, as the user may not know how to read them.
 
@@ -165,6 +144,58 @@ Below are the translated lyrics:
 
 """
 
+def translate(artist_name, song_name):
+    lyrics = get_lyrics_deduplicated(artist_name, song_name)
+    
+    input_list = [
+        {"role": "user", "content": lyrics}
+    ]
+
+    response = client.responses.create(
+        model="gpt-4.1",
+        instructions=instructions,
+        temperature=0,
+        input=input_list,
+        store=False
+    )
+
+    translated_output = response.output_text
+    
+    # Filter out "---" from the output before returning
+    translated_output = re.sub(r'---+', '', translated_output)
+    
+    # Return the full output with XML tags so frontend can parse it properly
+    return translated_output
+
+def q_and_a(query, context, translated_output, previous_response_id):
+    instructions_for_q_and_a = instructions_for_q_and_a.format(translated_output=translated_output)
+    
+    user_input = context + "\n\n" + query
+    
+    # if first_request:
+    #     response_q_and_a = client.responses.create(
+    #         model="gpt-4.1",
+    #         instructions=instructions_for_q_and_a,
+    #         max_output_tokens=500,
+    #         temperature=0,
+    #         input=[{"role": "user", "content": user_input}]
+    #     )
+    #     first_request=False
+    # else:
+    response_q_and_a = client.responses.create(
+    model="gpt-4.1",
+    instructions=instructions_for_q_and_a,
+    previous_response_id=previous_response_id,
+    max_output_tokens=500,
+    temperature=0,
+    input=[{"role": "user", "content": user_input}]
+    )
+    
+    previous_response_id = response_q_and_a.id
+        
+    return previous_response_id, response_q_and_a.output_text
+    
+    
 # input_list += response.output
 
 # for item in response.output: 
@@ -191,42 +222,14 @@ Below are the translated lyrics:
 # )
             
 
-def main():
-    print("Hello from song-translator!")
-    # print(response.output_text)
-    # print(translated_output)
+# def main():
+#     print("Hello from song-translator!")
+#     # print(response.output_text)
+#     # print(translated_output)
     
-    first_request = True
-    
-    while True:
-        question = input("Your question (or enter q to exit): ")
-        
-        if question.lower() == "q":
-            break
-        
-        user_input = context + "\n\n" + question
-        
-        if first_request:
-            response_q_and_a = client.responses.create(
-                model="gpt-4.1",
-                instructions=instructions_for_q_and_a,
-                max_output_tokens=500,
-                temperature=0,
-                input=[{"role": "user", "content": user_input}]
-            )
-            first_request=False
-        else:
-            response_q_and_a = client.responses.create(
-            model="gpt-4.1",
-            instructions=instructions_for_q_and_a,
-            previous_response_id=response_q_and_a.id,
-            max_output_tokens=500,
-            temperature=0,
-            input=[{"role": "user", "content": user_input}]
-            )
             
-        # print(response_q_and_a.output_text)
-        print(response_q_and_a.output_text)
+#     # print(response_q_and_a.output_text)
 
-if __name__ == "__main__":
-    main()
+
+# if __name__ == "__main__":
+#     main()

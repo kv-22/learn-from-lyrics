@@ -1,0 +1,117 @@
+.nav-drawer-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 998;
+  animation: fadeIn 0.2s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.nav-drawer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 280px;
+  height: 100vh;
+  background-color: white;
+  z-index: 999;
+  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  animation: slideIn 0.3s ease-out;
+  border-radius: 0 20px 20px 0;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+.nav-drawer-header {
+  padding: 24px 20px;
+  border-bottom: 1px solid #e5e5e5;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.nav-drawer-title-section {
+  flex: 1;
+}
+
+.nav-drawer-title {
+  font-size: 24px;
+  font-weight: 700;
+  color: #213547;
+  margin-bottom: 4px;
+}
+
+.nav-drawer-subtitle {
+  font-size: 14px;
+  color: #666;
+}
+
+.nav-drawer-close {
+  background: none;
+  border: none;
+  font-size: 24px;
+  color: #666;
+  cursor: pointer;
+  padding: 4px;
+  line-height: 1;
+  transition: color 0.2s;
+}
+
+.nav-drawer-close:hover {
+  color: #213547;
+}
+
+.nav-drawer-menu {
+  flex: 1;
+  padding: 16px 0;
+  overflow-y: auto;
+}
+
+.nav-drawer-item {
+  display: flex;
+  align-items: center;
+  padding: 16px 20px;
+  color: #213547;
+  text-decoration: none;
+  transition: background-color 0.2s;
+  gap: 16px;
+}
+
+.nav-drawer-item:hover {
+  background-color: #f5f5f5;
+}
+
+.nav-drawer-item.active {
+  background-color: #e3f2fd;
+  color: #1976d2;
+}
+
+.nav-drawer-item span {
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.nav-icon {
+  flex-shrink: 0;
+}
+
