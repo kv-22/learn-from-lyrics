@@ -11,8 +11,6 @@ def deduplicate_verses(lyrics: str) -> str:
     Remove repeated verses from lyrics while preserving order.
     Splits lyrics into verses (by blank lines) and keeps only first occurrence of each.
     """
-    if not lyrics:
-        return lyrics
     
     # Split into verses (separated by blank lines)
     verses = lyrics.split('\n\n')
@@ -30,14 +28,19 @@ def deduplicate_verses(lyrics: str) -> str:
     
     return '\n\n'.join(unique_verses)
 
-def get_lyrics(artist_name: str, song_name: str):
-    genius = lyricsgenius.Genius(GENIUS_ACCESS_TOKEN)
-
-    song = genius.search_song(song_name, artist_name)
-    return song.lyrics
 
 def get_lyrics_deduplicated(artist_name: str, song_name: str):
     """Get lyrics with repeated verses removed."""
-    lyrics = get_lyrics(artist_name, song_name).lower()
-    return deduplicate_verses(lyrics)
+    try:
+        genius = lyricsgenius.Genius(GENIUS_ACCESS_TOKEN)
+
+        song = genius.search_song(song_name, artist_name)
+        
+        if song.lyrics is None:
+            return None # handle case when not found or error in input
+        return deduplicate_verses(song.lyrics.lower())
+    except Exception as e:
+        print(str(e))
+        return None
+
     

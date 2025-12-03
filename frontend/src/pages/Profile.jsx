@@ -3,6 +3,8 @@ import Header from '../components/Header';
 import { getVocabulary } from '../utils/vocabulary';
 import './Profile.css';
 
+const DEMO_USER_ID = 'demo_user';
+
 const Profile = ({ onMenuClick }) => {
   const [isSignedIn, setIsSignedIn] = useState(false);
   const [userName, setUserName] = useState('Arabic Learner');
@@ -15,11 +17,16 @@ const Profile = ({ onMenuClick }) => {
     // Check if user is signed in (dummy check)
     const signedIn = localStorage.getItem('arabic_songs_signed_in') === 'true';
     setIsSignedIn(signedIn);
-    
+
     if (signedIn) {
-      // Calculate stats from vocabulary
-      const vocabulary = getVocabulary();
-      // For now, using dummy stats
+      // Calculate stats from vocabulary (placeholder for future)
+      (async () => {
+        try {
+          await getVocabulary(DEMO_USER_ID);
+        } catch (e) {
+          console.error('Error loading vocabulary for profile stats', e);
+        }
+      })();
     }
   }, []);
 
@@ -135,4 +142,7 @@ const Profile = ({ onMenuClick }) => {
 };
 
 export default Profile;
+
+
+
 

@@ -145,27 +145,35 @@ Below are the translated lyrics:
 """
 
 def translate(artist_name, song_name):
-    lyrics = get_lyrics_deduplicated(artist_name, song_name)
+    try:
     
-    input_list = [
-        {"role": "user", "content": lyrics}
-    ]
+        lyrics = get_lyrics_deduplicated(artist_name, song_name)
+        
+        if lyrics is None:
+            return "Sorry there was an error fetching the lyrics. Please make sure you entered the correct artist and song."
+        
+        input_list = [
+            {"role": "user", "content": lyrics}
+        ]
 
-    response = client.responses.create(
-        model="gpt-4.1",
-        instructions=instructions,
-        temperature=0,
-        input=input_list,
-        store=False
-    )
+        response = client.responses.create(
+            model="gpt-4.1",
+            instructions=instructions,
+            temperature=0,
+            input=input_list,
+            store=False
+        )
 
-    translated_output = response.output_text
-    
-    # Filter out "---" from the output before returning
-    translated_output = re.sub(r'---+', '', translated_output)
-    
-    # Return the full output with XML tags so frontend can parse it properly
-    return translated_output
+        translated_output = response.output_text
+        
+        # Filter out "---" from the output before returning
+        translated_output = re.sub(r'---+', '', translated_output)
+        
+        # Return the full output with XML tags so frontend can parse it properly
+        return translated_output
+    except Exception as e:
+        print(str(e))
+        return "Something went wrong :( please try again"
 
 def q_and_a(query, context, translated_output, previous_response_id):
     instructions_for_q_and_a = instructions_for_q_and_a.format(translated_output=translated_output)

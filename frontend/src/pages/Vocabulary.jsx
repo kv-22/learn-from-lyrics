@@ -3,6 +3,8 @@ import Header from '../components/Header';
 import { getVocabulary, removeFromVocabulary } from '../utils/vocabulary';
 import './Vocabulary.css';
 
+const DEMO_USER_ID = 'demo_user';
+
 const Vocabulary = ({ onMenuClick }) => {
   const [vocabulary, setVocabulary] = useState([]);
 
@@ -10,15 +12,15 @@ const Vocabulary = ({ onMenuClick }) => {
     loadVocabulary();
   }, []);
 
-  const loadVocabulary = () => {
-    const vocab = getVocabulary();
+  const loadVocabulary = async () => {
+    const vocab = await getVocabulary(DEMO_USER_ID);
     setVocabulary(vocab);
   };
 
-  const handleDelete = (id) => {
+  const handleDelete = async (id) => {
     if (window.confirm('Are you sure you want to remove this word from your vocabulary?')) {
-      removeFromVocabulary(id);
-      loadVocabulary();
+      await removeFromVocabulary(DEMO_USER_ID, id);
+      await loadVocabulary();
     }
   };
 
@@ -46,7 +48,7 @@ const Vocabulary = ({ onMenuClick }) => {
 
         {vocabulary.length === 0 ? (
           <div className="empty-vocabulary">
-            <p>No words saved yet. Select text from a song translation and add it to your vocabulary!</p>
+            <p>No words saved yet. Use the plus button next to a word in the translation to save it to your vocabulary.</p>
           </div>
         ) : (
           <div className="vocabulary-list">
@@ -62,6 +64,17 @@ const Vocabulary = ({ onMenuClick }) => {
                       <span className="vocabulary-transliteration">({item.transliteration})</span>
                     )}
                   </div>
+                  {item.base && item.base.trim() && (
+                    <div className="vocabulary-base">
+                      <span className="vocabulary-base-label">Base:</span>{' '}
+                      <span className="vocabulary-base-text">{item.base}</span>
+                    </div>
+                  )}
+                  {item.note && item.note.trim() && (
+                    <div className="vocabulary-note">
+                      {item.note}
+                    </div>
+                  )}
                 </div>
                 <button
                   className="delete-button"

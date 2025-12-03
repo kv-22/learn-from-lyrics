@@ -3,117 +3,28 @@ import Header from '../components/Header';
 import { addToVocabulary } from '../utils/vocabulary';
 import './Home.css';
 
+const DEMO_USER_ID = 'demo_user';
+
 const Home = ({ onMenuClick }) => {
   const [songName, setSongName] = useState('');
   const [artistName, setArtistName] = useState('');
   const [translation, setTranslation] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [selectedText, setSelectedText] = useState('');
-  const [showAddButton, setShowAddButton] = useState(false);
-  const [selectedWord, setSelectedWord] = useState(null);
 
-  // Handle text selection
+  // Restore last search/translation from localStorage on mount
   useEffect(() => {
-    const handleSelection = () => {
-      const selection = window.getSelection();
-      const selectedTextContent = selection.toString().trim();
-      
-      if (selectedTextContent.length > 0 && translation) {
-        // Get the selected element to find the phrase card
-        try {
-          const range = selection.getRangeAt(0);
-          let container = range.commonAncestorContainer;
-          
-          // If container is a text node, get its parent
-          if (container.nodeType === Node.TEXT_NODE) {
-            container = container.parentElement;
-          }
-          
-          // Find the closest phrase card
-          const phraseCard = container.closest ? container.closest('.phrase-card') : null;
-          
-          if (phraseCard) {
-            // Extract English and Arabic from the phrase card
-            const englishEl = phraseCard.querySelector('.phrase-english');
-            const arabicEl = phraseCard.querySelector('.phrase-arabic');
-            const transliterationEl = phraseCard.querySelector('.phrase-transliteration');
-            
-            const english = englishEl?.textContent?.trim() || selectedTextContent;
-            const arabic = arabicEl?.textContent?.trim() || '';
-            const transliteration = transliterationEl?.textContent?.trim() || '';
-            
-            setSelectedText(selectedTextContent);
-            setSelectedWord({ english, arabic, transliteration });
-            setShowAddButton(true);
-          } else {
-            // Fallback to simple word lookup
-            const word = findWordInTranslation(selectedTextContent);
-            setSelectedText(selectedTextContent);
-            setSelectedWord(word);
-            setShowAddButton(true);
-          }
-        } catch (error) {
-          // Fallback to simple word lookup
-          const word = findWordInTranslation(selectedTextContent);
-          setSelectedText(selectedTextContent);
-          setSelectedWord(word);
-          setShowAddButton(true);
-        }
-      } else {
-        setShowAddButton(false);
-        setSelectedText('');
-        setSelectedWord(null);
+    try {
+      const savedState = localStorage.getItem('song_translator_home_state');
+      if (savedState) {
+        const parsed = JSON.parse(savedState);
+        if (parsed.songName) setSongName(parsed.songName);
+        if (parsed.artistName) setArtistName(parsed.artistName);
+        if (parsed.translation) setTranslation(parsed.translation);
       }
-    };
-
-    const handleClick = (e) => {
-      // Close selection if clicking outside
-      if (!e.target.closest('.translation-text') && !e.target.closest('.add-vocab-button-container')) {
-        setShowAddButton(false);
-        setSelectedText('');
-        setSelectedWord(null);
-        window.getSelection().removeAllRanges();
-      }
-    };
-
-    document.addEventListener('mouseup', handleSelection);
-    document.addEventListener('mousedown', handleClick);
-    
-    return () => {
-      document.removeEventListener('mouseup', handleSelection);
-      document.removeEventListener('mousedown', handleClick);
-    };
-  }, [translation]);
-
-  const findWordInTranslation = (text) => {
-    // Dummy implementation - in production, parse the translation to find matching words
-    // For now, we'll create a simple word object
-    const words = [
-      { english: 'Hello', arabic: 'مرحبا', transliteration: 'Marhaba' },
-      { english: 'How are you', arabic: 'كيف حالك', transliteration: 'Kayfa Haluk' },
-      { english: 'I am fine', arabic: 'أنا بخير', transliteration: 'Ana Bekhair' },
-      { english: 'Thank you very much', arabic: 'شكرا جزيلا', transliteration: 'Shukran Jazilan' },
-    ];
-
-    // Try exact match first
-    const exactMatch = words.find(
-      (w) => w.english.toLowerCase() === text.toLowerCase().trim()
-    );
-
-    if (exactMatch) return exactMatch;
-
-    // Try partial match
-    const partialMatch = words.find(
-      (w) => w.english.toLowerCase().includes(text.toLowerCase().trim()) ||
-             text.toLowerCase().trim().includes(w.english.toLowerCase())
-    );
-
-    if (partialMatch) return partialMatch;
-
-    // If no match, try to extract from the selection context
-    // For now, return a basic word object
-    return { english: text.trim(), arabic: '', transliteration: '' };
-  };
+    } catch (error) {
+      console.error('Error restoring Home state from localStorage', error);
+    }
+  }, []);
 
   const parseWordTranslation = (wordTranslationText) => {
     // Parse word-by-word translation entries
@@ -156,18 +67,18 @@ const Home = ({ onMenuClick }) => {
       // Extract Note (everything after Note: until end or next word)
       const noteMatch = restOfEntry.match(/(?:\*)?Note(?:\*)?:\s*([\s\S]+)/);
       
-      // Filter out "---" from note, translation, transliteration, and base
-      const cleanNote = noteMatch ? noteMatch[1].replace(/---+/g, '').trim() : '';
-      const cleanTranslation = translationMatch ? translationMatch[1].replace(/---+/g, '').trim() : '';
-      const cleanTransliteration = transliterationMatch ? transliterationMatch[1].replace(/---+/g, '').trim() : '';
-      const cleanBase = baseMatch ? baseMatch[1].replace(/---+/g, '').trim() : '';
+      // Use values as provided by the backend (no additional filtering here)
+      const note = noteMatch ? noteMatch[1].trim() : '';
+      const translation = translationMatch ? translationMatch[1].trim() : '';
+      const transliteration = transliterationMatch ? transliterationMatch[1].trim() : '';
+      const base = baseMatch ? baseMatch[1].trim() : '';
       
       words.push({
-        word: word,
-        translation: cleanTranslation,
-        transliteration: cleanTransliteration,
-        base: cleanBase,
-        note: cleanNote,
+        word,
+        translation,
+        transliteration,
+        base,
+        note,
       });
     }
     
@@ -185,18 +96,18 @@ const Home = ({ onMenuClick }) => {
             const baseMatch = block.match(/(?:\*)?Base(?:\*)?:\s*([^\n]+)/);
             const noteMatch = block.match(/(?:\*)?Note(?:\*)?:\s*([\s\S]+)/);
             
-            // Filter out "---" from note, translation, transliteration, and base
-            const cleanNote = noteMatch ? noteMatch[1].replace(/---+/g, '').trim() : '';
-            const cleanTranslation = translationMatch ? translationMatch[1].replace(/---+/g, '').trim() : '';
-            const cleanTransliteration = transliterationMatch ? transliterationMatch[1].replace(/---+/g, '').trim() : '';
-            const cleanBase = baseMatch ? baseMatch[1].replace(/---+/g, '').trim() : '';
+            // Use values as provided by the backend (no additional filtering here)
+            const note = noteMatch ? noteMatch[1].trim() : '';
+            const translation = translationMatch ? translationMatch[1].trim() : '';
+            const transliteration = transliterationMatch ? transliterationMatch[1].trim() : '';
+            const base = baseMatch ? baseMatch[1].trim() : '';
             
             words.push({
-              word: word,
-              translation: cleanTranslation,
-              transliteration: cleanTransliteration,
-              base: cleanBase,
-              note: cleanNote,
+              word,
+              translation,
+              transliteration,
+              base,
+              note,
             });
           }
         }
@@ -231,8 +142,8 @@ const Home = ({ onMenuClick }) => {
       // Extract line translation
       if (translatedOutput.includes('<ltranslation>') && translatedOutput.includes('</ltranslation>')) {
         const ltransMatch = translatedOutput.match(/<ltranslation>([\s\S]*?)<\/ltranslation>/);
-        if (ltransMatch) {
-          let rawLineTranslation = ltransMatch[1].trim();
+          if (ltransMatch) {
+            let rawLineTranslation = ltransMatch[1].trim();
           
           // Extract header if present
           if (rawLineTranslation.includes('## Line-by-line translation and transliteration:')) {
@@ -241,10 +152,10 @@ const Home = ({ onMenuClick }) => {
               lineTranslationHeader = 'Line-by-line translation and transliteration';
               rawLineTranslation = rawLineTranslation.replace(/## Line-by-line translation and transliteration:[\s\n]*/, '').trim();
             }
-          }
-          
-          // Filter out "---" from line translation
-          lineTranslation = rawLineTranslation.replace(/---+/g, '').trim();
+            }
+            
+            // Use line translation as provided by the backend (no additional filtering here)
+            lineTranslation = rawLineTranslation.trim();
         }
       }
 
@@ -252,8 +163,8 @@ const Home = ({ onMenuClick }) => {
       if (translatedOutput.includes('<wtranslation>') && translatedOutput.includes('</wtranslation>')) {
         const wtransMatch = translatedOutput.match(/<wtranslation>([\s\S]*?)<\/wtranslation>/);
         if (wtransMatch) {
-          // Filter out "---" from word translation
-          wordTranslation = wtransMatch[1].replace(/---+/g, '').trim();
+          // Use word translation as provided by the backend (no additional filtering here)
+          wordTranslation = wtransMatch[1].trim();
           parsedWords = parseWordTranslation(wordTranslation);
           console.log('Parsed words:', parsedWords.length, 'from word translation text');
         }
@@ -282,7 +193,9 @@ const Home = ({ onMenuClick }) => {
     
     try {
       // Call the FastAPI backend
-      const response = await fetch('http://localhost:8000/get_translation', {
+      // Use window.location.hostname to dynamically get the current host
+      const apiHost = window.location.hostname;
+      const response = await fetch(`http://${apiHost}:8000/get_translation`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -308,7 +221,7 @@ const Home = ({ onMenuClick }) => {
         translatedOutput || ''
       );
       
-      setTranslation({
+      const newTranslation = {
         song: songName.trim(),
         artist: artistName.trim(),
         dialect: dialect || 'Unknown',
@@ -316,34 +229,33 @@ const Home = ({ onMenuClick }) => {
         lineTranslationHeader: lineTranslationHeader || '',
         wordTranslation: wordTranslation || '',
         parsedWords: parsedWords || [],
-      });
+      };
+
+      setTranslation(newTranslation);
+
+      // Persist state so navigating away and back keeps the content
+      try {
+        localStorage.setItem(
+          'song_translator_home_state',
+          JSON.stringify({
+            songName: songName.trim(),
+            artistName: artistName.trim(),
+            translation: newTranslation,
+          })
+        );
+      } catch (error) {
+        console.error('Error saving Home state to localStorage', error);
+      }
     } catch (error) {
       console.error('Error fetching translation:', error);
-      alert(`Error fetching translation: ${error.message}. Make sure the FastAPI server is running on http://localhost:8000`);
+      const apiHost = window.location.hostname;
+      alert(`Error fetching translation: ${error.message}. Make sure the FastAPI server is running on http://${apiHost}:8000`);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleAddToVocabulary = () => {
-    if (selectedWord) {
-      const added = addToVocabulary({
-        english: selectedWord.english,
-        arabic: selectedWord.arabic || selectedText,
-        transliteration: selectedWord.transliteration || '',
-      });
-      
-      if (added) {
-        alert(`Added "${selectedWord.english}" to vocabulary!`);
-        setShowAddButton(false);
-        setSelectedText('');
-        setSelectedWord(null);
-        window.getSelection().removeAllRanges();
-      } else {
-        alert('This word is already in your vocabulary');
-      }
-    }
-  };
+  // Selection-based add-to-vocabulary has been removed.
 
   const handleKeyPress = (e) => {
     if (e.key === 'Enter') {
@@ -465,44 +377,12 @@ const Home = ({ onMenuClick }) => {
                 })}
               </div>
 
-              {showAddButton && selectedWord && (
-                <>
-                  <div className="highlighted-phrase-card">
-                    <div className="highlighted-phrase-left">{selectedWord.english}</div>
-                    <div className="highlighted-phrase-right" dir="rtl">
-                      {selectedWord.arabic || selectedText}
-                    </div>
-                  </div>
-                  <div className="add-vocab-button-container">
-                    <button className="add-vocab-button" onClick={handleAddToVocabulary}>
-                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <line x1="12" y1="5" x2="12" y2="19"></line>
-                        <line x1="5" y1="12" x2="19" y2="12"></line>
-                      </svg>
-                      Add to Vocabulary
-                    </button>
-                  </div>
-                </>
-              )}
-
               <div className="word-translations">
                 <h3 className="translation-section-title">Word-by-word Translation</h3>
                 <div className="translation-text">
                   {translation.parsedWords && translation.parsedWords.length > 0 ? (
                     translation.parsedWords.map((word, idx) => (
-                      <div key={idx} className="word-block">
-                        <div className="word-header">
-                          <span className="word-arabic" dir="rtl">{word.word}</span>
-                          <span className="word-transliteration">{word.transliteration}</span>
-                        </div>
-                        <div className="word-translation">{word.translation}</div>
-                        {word.base && (
-                          <div className="word-base">Base: {word.base}</div>
-                        )}
-                        {word.note && (
-                          <div className="word-note">{word.note}</div>
-                        )}
-                      </div>
+                      <WordBlock key={idx} word={word} />
                     ))
                   ) : (
                     translation.wordTranslation.split('\n\n').map((wordBlock, idx) => (
@@ -519,6 +399,60 @@ const Home = ({ onMenuClick }) => {
           </div>
         )}
       </div>
+    </div>
+  );
+};
+
+const WordBlock = ({ word }) => {
+  const handleAdd = async () => {
+    try {
+      const added = await addToVocabulary(DEMO_USER_ID, {
+        arabic: word.word,
+        english: word.translation,
+        translation: word.translation,
+        transliteration: word.transliteration || '',
+        base: word.base || '',
+        note: word.note || '',
+      });
+
+      if (added) {
+        alert(`Added "${word.translation}" to vocabulary!`);
+      } else {
+        alert('This word is already in your vocabulary');
+      }
+    } catch (error) {
+      console.error('Error adding word to vocabulary', error);
+      alert('There was an error adding this word to your vocabulary.');
+    }
+  };
+
+  return (
+    <div className="word-block">
+      <div className="word-header">
+        <button
+          className="word-add-button"
+          onClick={handleAdd}
+          aria-label="Add word to vocabulary"
+        >
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+          </svg>
+        </button>
+        <div className="word-header-main">
+          <span className="word-arabic" dir="rtl">{word.word}</span>
+          {word.transliteration && (
+            <span className="word-transliteration">{word.transliteration}</span>
+          )}
+        </div>
+      </div>
+      <div className="word-translation">{word.translation}</div>
+      {word.base && (
+        <div className="word-base">Base: {word.base}</div>
+      )}
+      {word.note && (
+        <div className="word-note">{word.note}</div>
+      )}
     </div>
   );
 };

@@ -287,13 +287,38 @@
   gap: 12px;
 }
 
+.word-header-main {
+  display: flex;
+  flex: 1;
+  justify-content: flex-end;
+  align-items: baseline;
+  gap: 8px;
+}
+
 .word-arabic {
   font-size: 20px;
   font-weight: 600;
   color: #213547;
   font-family: 'Arial', sans-serif;
-  flex: 1;
   text-align: right;
+}
+
+.word-add-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: none;
+  background-color: #4A90E2;
+  color: white;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.word-add-button:hover {
+  background-color: #357abd;
 }
 
 .word-transliteration {
