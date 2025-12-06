@@ -11,12 +11,68 @@
 
 .vocabulary-header {
   margin-bottom: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
 .vocabulary-title-section {
   display: flex;
   align-items: flex-start;
   gap: 12px;
+}
+
+.vocabulary-search-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.vocabulary-search-input-wrapper {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  background-color: #ffffff;
+  border-radius: 999px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  border: 1px solid #e0e0e0;
+}
+
+.vocabulary-search-icon {
+  color: #999;
+  flex-shrink: 0;
+}
+
+.vocabulary-search-input {
+  border: none;
+  outline: none;
+  width: 100%;
+  font-size: 14px;
+  color: #213547;
+  background: transparent;
+}
+
+.vocabulary-search-input::placeholder {
+  color: #999;
+}
+
+.vocabulary-search-clear {
+  border: none;
+  background: none;
+  color: #4A90E2;
+  font-size: 13px;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 999px;
+  transition: background-color 0.15s, color 0.15s;
+}
+
+.vocabulary-search-clear:hover {
+  background-color: rgba(74, 144, 226, 0.08);
+  color: #2f6bb2;
 }
 
 .vocabulary-icon {
@@ -135,6 +191,68 @@
   background-color: #ffebee;
 }
 
+.vocabulary-confirm-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
 
+.vocabulary-confirm-modal {
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 20px 24px;
+  max-width: 360px;
+  width: 100%;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+}
 
+.vocabulary-confirm-title {
+  margin: 0 0 8px;
+  font-size: 18px;
+  font-weight: 600;
+  color: #213547;
+}
 
+.vocabulary-confirm-text {
+  margin: 0 0 16px;
+  font-size: 14px;
+  color: #555;
+}
+
+.vocabulary-confirm-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.vocabulary-confirm-button {
+  border-radius: 999px;
+  padding: 8px 14px;
+  font-size: 14px;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.15s, color 0.15s, box-shadow 0.15s;
+}
+
+.vocabulary-confirm-button.secondary {
+  background: #f3f4f6;
+  color: #111827;
+}
+
+.vocabulary-confirm-button.secondary:hover {
+  background: #e5e7eb;
+}
+
+.vocabulary-confirm-button.danger {
+  background: #d32f2f;
+  color: #ffffff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+.vocabulary-confirm-button.danger:hover {
+  background: #b71c1c;
+}

@@ -1,26 +1,19 @@
-import { initializeApp } from "firebase/app";
-import { getDatabase, ref, get, push, set, remove } from "firebase/database";
+import { db, auth } from "./firebase"
+import { ref, get, push, set, remove } from "firebase/database";
 
-const firebaseConfig = {
-  apiKey: "AIzaSyDqBaUqF_DT125ZKu5sqE7SmYsJ2qE8tHY",
-  authDomain: "songtranslator-91f75.firebaseapp.com",
-  databaseURL: "https://songtranslator-91f75-default-rtdb.firebaseio.com",
-  projectId: "songtranslator-91f75",
-  storageBucket: "songtranslator-91f75.firebasestorage.app",
-  messagingSenderId: "317917056626",
-  appId: "1:317917056626:web:a0203d77d2943665c6fceb"
+// Get current user ID from Firebase auth
+const getCurrentUserId = () => {
+  const user = auth.currentUser;
+  if (!user) {
+    throw new Error('User not authenticated');
+  }
+  return user.uid;
 };
 
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-
-// Initialize Realtime Database and get a reference to the service
-const db = getDatabase(app);
-
-// For now we use a simple demo user id since full auth isn't implemented yet
-const DEFAULT_USER_ID = 'demo_user';
-
-export const getVocabulary = async (userId = DEFAULT_USER_ID) => {
+export const getVocabulary = async (userId = null) => {
+  if (!userId) {
+    userId = getCurrentUserId();
+  }
   try {
     const snapshot = await get(ref(db, 'users/' + userId + '/vocab'));
     if (snapshot.exists()) {
@@ -39,7 +32,10 @@ export const getVocabulary = async (userId = DEFAULT_USER_ID) => {
   }
 };
 
-export const addToVocabulary = async (userId = DEFAULT_USER_ID, word) => {
+export const addToVocabulary = async (userId = null, word) => {
+  if (!userId) {
+    userId = getCurrentUserId();
+  }
   try {
     // Check if word already exists
     const vocabulary = await getVocabulary(userId);
@@ -55,8 +51,8 @@ export const addToVocabulary = async (userId = DEFAULT_USER_ID, word) => {
         arabic: word.arabic,
         english: word.english,
         translation: word.translation,
-        transliteration: word.transliteration || '',
-        base: word.base || '',
+        transliteration: word.transliteration,
+        base: word.base,
         note: word.note || ''
       });
       return true;
@@ -68,7 +64,10 @@ export const addToVocabulary = async (userId = DEFAULT_USER_ID, word) => {
   }
 };
 
-export const removeFromVocabulary = async (userId = DEFAULT_USER_ID, wordId) => {
+export const removeFromVocabulary = async (userId = null, wordId) => {
+  if (!userId) {
+    userId = getCurrentUserId();
+  }
   try {
     await remove(ref(db, 'users/' + userId + '/vocab/' + wordId));
     return true;

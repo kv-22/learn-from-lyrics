@@ -279,12 +279,43 @@
   border-left: 3px solid #4A90E2;
 }
 
+.word-status {
+  margin-top: 8px;
+  margin-bottom: 4px;
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.word-status-success {
+  background-color: #e6f4ea;
+  color: #1e7b34;
+}
+
+.word-status-error {
+  background-color: #fdecea;
+  color: #b3261e;
+}
+
+.word-status-info {
+  background-color: #e8f0fe;
+  color: #174ea6;
+}
+
 .word-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
   margin-bottom: 8px;
   gap: 12px;
+}
+
+.word-header-buttons {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
 }
 
 .word-header-main {
@@ -303,6 +334,26 @@
   text-align: right;
 }
 
+.word-chat-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: none;
+  background-color: #f0f0f0;
+  color: #4A90E2;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background-color 0.2s, color 0.2s;
+}
+
+.word-chat-button:hover {
+  background-color: #e0e0e0;
+  color: #357abd;
+}
+
 .word-add-button {
   display: inline-flex;
   align-items: center;
@@ -315,6 +366,7 @@
   color: white;
   cursor: pointer;
   flex-shrink: 0;
+  transition: background-color 0.2s;
 }
 
 .word-add-button:hover {

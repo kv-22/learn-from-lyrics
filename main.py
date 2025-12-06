@@ -176,7 +176,7 @@ def translate(artist_name, song_name):
         return "Something went wrong :( please try again"
 
 def q_and_a(query, context, translated_output, previous_response_id):
-    instructions_for_q_and_a = instructions_for_q_and_a.format(translated_output=translated_output)
+    formatted_instructions = instructions_for_q_and_a.format(translated_output=translated_output)
     
     user_input = context + "\n\n" + query
     
@@ -192,7 +192,7 @@ def q_and_a(query, context, translated_output, previous_response_id):
     # else:
     response_q_and_a = client.responses.create(
     model="gpt-4.1",
-    instructions=instructions_for_q_and_a,
+    instructions=formatted_instructions,
     previous_response_id=previous_response_id,
     max_output_tokens=500,
     temperature=0,

@@ -12,7 +12,7 @@ const NavDrawer = ({ isOpen, onClose }) => {
       <div className="nav-drawer">
         <div className="nav-drawer-header">
           <div className="nav-drawer-title-section">
-            <h2 className="nav-drawer-title">Arabic Songs</h2>
+            <h2 className="nav-drawer-title">Arabic Learner</h2>
             <p className="nav-drawer-subtitle">Learn from music</p>
           </div>
           <button className="nav-drawer-close" onClick={onClose}>

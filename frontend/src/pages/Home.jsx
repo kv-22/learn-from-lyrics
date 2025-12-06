@@ -1,9 +1,35 @@
 import { useState, useEffect } from 'react';
 import Header from '../components/Header';
 import { addToVocabulary } from '../utils/vocabulary';
+import { auth } from '../utils/firebase';
+import ChatPanel from '../components/ChatPanel';
 import './Home.css';
 
-const DEMO_USER_ID = 'demo_user';
+// Format song/artist names for display:
+// - Trim whitespace
+// - If the text starts with an English letter, title-case each English word
+const formatDisplayName = (name) => {
+  if (!name) return '';
+  const trimmed = name.trim();
+  if (!trimmed) return '';
+
+  const firstChar = trimmed[0];
+  if (/[A-Za-z]/.test(firstChar)) {
+    return trimmed
+      .split(' ')
+      .map((word) => {
+        if (!word) return '';
+        const ch = word[0];
+        if (/[A-Za-z]/.test(ch)) {
+          return ch.toUpperCase() + word.slice(1);
+        }
+        return word;
+      })
+      .join(' ');
+  }
+
+  return trimmed;
+};
 
 const Home = ({ onMenuClick }) => {
   const [songName, setSongName] = useState('');
@@ -222,13 +248,14 @@ const Home = ({ onMenuClick }) => {
       );
       
       const newTranslation = {
-        song: songName.trim(),
-        artist: artistName.trim(),
+        song: formatDisplayName(songName),
+        artist: formatDisplayName(artistName),
         dialect: dialect || 'Unknown',
         lineTranslation: lineTranslation || translatedOutput || '',
         lineTranslationHeader: lineTranslationHeader || '',
         wordTranslation: wordTranslation || '',
         parsedWords: parsedWords || [],
+        translatedOutput: translatedOutput || '', // Store the full translated output for chat
       };
 
       setTranslation(newTranslation);
@@ -285,6 +312,10 @@ const Home = ({ onMenuClick }) => {
           </div>
           
           <div className="search-container">
+            <svg className="search-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <circle cx="11" cy="11" r="8"></circle>
+              <path d="m21 21-4.35-4.35"></path>
+            </svg>
             <input
               type="text"
               className="search-input"
@@ -382,7 +413,7 @@ const Home = ({ onMenuClick }) => {
                 <div className="translation-text">
                   {translation.parsedWords && translation.parsedWords.length > 0 ? (
                     translation.parsedWords.map((word, idx) => (
-                      <WordBlock key={idx} word={word} />
+                      <WordBlock key={idx} word={word} translatedOutput={translation.translatedOutput} />
                     ))
                   ) : (
                     translation.wordTranslation.split('\n\n').map((wordBlock, idx) => (
@@ -403,10 +434,24 @@ const Home = ({ onMenuClick }) => {
   );
 };
 
-const WordBlock = ({ word }) => {
+const WordBlock = ({ word, translatedOutput }) => {
+  const [status, setStatus] = useState(null);
+  const [isChatOpen, setIsChatOpen] = useState(false);
+
   const handleAdd = async () => {
+    // Clear any previous status
+    setStatus(null);
+
+    if (!auth.currentUser) {
+      setStatus({
+        type: 'error',
+        message: 'Please sign in to add words to your vocabulary.',
+      });
+      return;
+    }
+
     try {
-      const added = await addToVocabulary(DEMO_USER_ID, {
+      const added = await addToVocabulary(null, {
         arabic: word.word,
         english: word.translation,
         translation: word.translation,
@@ -416,36 +461,69 @@ const WordBlock = ({ word }) => {
       });
 
       if (added) {
-        alert(`Added "${word.translation}" to vocabulary!`);
+        setStatus({
+          type: 'success',
+          message: 'Added to vocabulary!',
+        });
       } else {
-        alert('This word is already in your vocabulary');
+        setStatus({
+          type: 'info',
+          message: 'This word is already in your vocabulary',
+        });
       }
     } catch (error) {
       console.error('Error adding word to vocabulary', error);
-      alert('There was an error adding this word to your vocabulary.');
+      if (error.message === 'User not authenticated') {
+        setStatus({
+          type: 'error',
+          message: 'Please sign in to add words to your vocabulary.',
+        });
+      } else {
+        setStatus({
+          type: 'error',
+          message: 'There was an error adding this word to your vocabulary.',
+        });
+      }
     }
   };
 
   return (
-    <div className="word-block">
-      <div className="word-header">
-        <button
-          className="word-add-button"
-          onClick={handleAdd}
-          aria-label="Add word to vocabulary"
-        >
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <line x1="12" y1="5" x2="12" y2="19"></line>
-            <line x1="5" y1="12" x2="19" y2="12"></line>
-          </svg>
-        </button>
-        <div className="word-header-main">
-          <span className="word-arabic" dir="rtl">{word.word}</span>
-          {word.transliteration && (
-            <span className="word-transliteration">{word.transliteration}</span>
-          )}
+    <>
+      <div className="word-block">
+        <div className="word-header">
+          <div className="word-header-buttons">
+            <button
+              className="word-chat-button"
+              onClick={() => setIsChatOpen(true)}
+              aria-label="Chat about this word"
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+              </svg>
+            </button>
+            <button
+              className="word-add-button"
+              onClick={handleAdd}
+              aria-label="Add word to vocabulary"
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <line x1="12" y1="5" x2="12" y2="19"></line>
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+              </svg>
+            </button>
+          </div>
+          <div className="word-header-main">
+            <span className="word-arabic" dir="rtl">{word.word}</span>
+            {word.transliteration && (
+              <span className="word-transliteration">{word.transliteration}</span>
+            )}
+          </div>
         </div>
-      </div>
+      {status && (
+        <div className={`word-status word-status-${status.type}`}>
+          {status.message}
+        </div>
+      )}
       <div className="word-translation">{word.translation}</div>
       {word.base && (
         <div className="word-base">Base: {word.base}</div>
@@ -453,7 +531,14 @@ const WordBlock = ({ word }) => {
       {word.note && (
         <div className="word-note">{word.note}</div>
       )}
-    </div>
+      </div>
+      <ChatPanel
+        word={word}
+        translatedOutput={translatedOutput}
+        isOpen={isChatOpen}
+        onClose={() => setIsChatOpen(false)}
+      />
+    </>
   );
 };
 
