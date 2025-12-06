@@ -156,10 +156,10 @@ def translate(artist_name, song_name):
         lyrics = get_lyrics_deduplicated(artist_name, song_name)
         
         if lyrics is None:
-            return "Sorry there was an error fetching the lyrics. Please make sure you entered the correct artist and song."
+            return {"error": "Sorry there was an error fetching the lyrics. Please make sure you entered the correct artist and song."}
         
         if not contains_arabic(lyrics):
-            return "Please enter an Arabic song to translate."
+            return {"error": "Please enter an Arabic song to translate."}
         
         input_list = [
             {"role": "user", "content": lyrics}
@@ -182,7 +182,7 @@ def translate(artist_name, song_name):
         return translated_output
     except Exception as e:
         print(str(e))
-        return "Something went wrong :( please try again"
+        return {"error": "Something went wrong :( please try again"}
 
 def q_and_a(query, context, translated_output, previous_response_id):
     formatted_instructions = instructions_for_q_and_a.format(translated_output=translated_output)

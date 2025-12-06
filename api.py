@@ -37,10 +37,15 @@ app.add_middleware(
 
 @app.post("/get_translation")
 async def get_translation(song: Song):
-    translated_output = translate(artist_name=song.artist_name, song_name=song.song_name)
-    print(translated_output)
+    output = translate(artist_name=song.artist_name, song_name=song.song_name)
+    print(output)
+    
+    # Check if translate returned an error dict
+    if isinstance(output, dict) and "error" in output:
+        return output
+    
     return {
-        "translated_output": translated_output
+        "translated_output": output
     }
     
 @app.post("/chat")

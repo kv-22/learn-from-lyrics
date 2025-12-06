@@ -36,6 +36,7 @@ const Home = ({ onMenuClick }) => {
   const [artistName, setArtistName] = useState('');
   const [translation, setTranslation] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
   // Restore last search/translation from localStorage on mount
   useEffect(() => {
@@ -153,7 +154,6 @@ const Home = ({ onMenuClick }) => {
     try {
       let dialect = '';
       let lineTranslation = '';
-      let lineTranslationHeader = '';
       let wordTranslation = '';
       let parsedWords = [];
 
@@ -199,7 +199,7 @@ const Home = ({ onMenuClick }) => {
       return { dialect, lineTranslation, lineTranslationHeader, wordTranslation, parsedWords };
     } catch (error) {
       console.error('Error parsing translation:', error);
-      return { dialect: '', lineTranslation: translatedOutput, lineTranslationHeader: '', wordTranslation: '', parsedWords: [] };
+      return { dialect: '', lineTranslation: translatedOutput, wordTranslation: '', parsedWords: [] };
     }
   };
 
@@ -216,6 +216,7 @@ const Home = ({ onMenuClick }) => {
     }
 
     setLoading(true);
+    setError(null); // Clear any previous error
     
     try {
       // Call the FastAPI backend
@@ -238,12 +239,20 @@ const Home = ({ onMenuClick }) => {
 
       const data = await response.json();
       
+      // Check if the response contains an error
+      if (data.error) {
+        setError(data.error);
+        setTranslation(null); // Clear any previous translation
+        setLoading(false);
+        return;
+      }
+      
       // Extract translated_output - it should be a string with the translation
       // containing dialect, ltranslation, and wtranslation sections
       const translatedOutput = data.translated_output;
       
       // Parse the translation sections from the string
-      const { dialect, lineTranslation, lineTranslationHeader, wordTranslation, parsedWords } = parseTranslation(
+      const { dialect, lineTranslation, wordTranslation, parsedWords } = parseTranslation(
         translatedOutput || ''
       );
       
@@ -252,7 +261,6 @@ const Home = ({ onMenuClick }) => {
         artist: formatDisplayName(artistName),
         dialect: dialect || 'Unknown',
         lineTranslation: lineTranslation || translatedOutput || '',
-        lineTranslationHeader: lineTranslationHeader || '',
         wordTranslation: wordTranslation || '',
         parsedWords: parsedWords || [],
         translatedOutput: translatedOutput || '', // Store the full translated output for chat
@@ -332,7 +340,7 @@ const Home = ({ onMenuClick }) => {
           </button>
         </div>
 
-        {!translation && !loading && (
+        {!translation && !loading && !error && (
           <div className="empty-state">
             <div className="empty-icon">
               <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#4A90E2" strokeWidth="2">
@@ -343,6 +351,12 @@ const Home = ({ onMenuClick }) => {
             </div>
             <h2>Search for Arabic Songs</h2>
             <p>Type the name of a song in the search bar to see its lyrics with translations.</p>
+          </div>
+        )}
+
+        {error && !loading && (
+          <div className="empty-state">
+            <h3>{error}</h3>
           </div>
         )}
 
@@ -372,9 +386,9 @@ const Home = ({ onMenuClick }) => {
             <div className="translation-content">
               <h3 className="translation-section-title">Dialect: {translation.dialect}</h3>
               
-              {translation.lineTranslationHeader && (
-                <h3 className="translation-section-title">{translation.lineTranslationHeader}</h3>
-              )}
+              
+              <h3 className="translation-section-title">Line-by-line Translation</h3>
+              
               
               <div className="translation-text" id="translation-text">
                 {translation.lineTranslation.split('\n\n').map((paragraph, idx) => {
