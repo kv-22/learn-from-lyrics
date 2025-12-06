@@ -144,6 +144,12 @@ Below are the translated lyrics:
 
 """
 
+def contains_arabic(text):
+    """Check if text contains at least one Arabic character."""
+    # Main Arabic Unicode range
+    arabic_pattern = re.compile(r'[\u0600-\u06FF]')
+    return bool(arabic_pattern.search(text))
+
 def translate(artist_name, song_name):
     try:
     
@@ -151,6 +157,9 @@ def translate(artist_name, song_name):
         
         if lyrics is None:
             return "Sorry there was an error fetching the lyrics. Please make sure you entered the correct artist and song."
+        
+        if not contains_arabic(lyrics):
+            return "Please enter an Arabic song to translate."
         
         input_list = [
             {"role": "user", "content": lyrics}
