@@ -1,6 +1,9 @@
 import lyricsgenius
 import os
 from dotenv import load_dotenv
+import logging
+
+logger = logging.getLogger(__name__)
 
 load_dotenv()
 
@@ -39,8 +42,8 @@ def get_lyrics_deduplicated(artist_name: str, song_name: str):
         if song.lyrics is None:
             return None # handle case when not found or error in input
         return deduplicate_verses(song.lyrics.lower())
-    except Exception as e:
-        print(str(e))
+    except Exception:
+        logger.exception(f"Error in getting lyrics for {song_name} {artist_name}.")
         return None
 
     

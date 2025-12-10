@@ -42,14 +42,14 @@ const ChatPanel = ({ word, translatedOutput, isOpen, onClose }) => {
         },
         body: JSON.stringify({
           word: {
-            arabic_text: word.word || '',
-            english_translation: word.translation || '',
-            transliteration: word.transliteration || '',
-            base: word.base || '',
+            arabic_text: word.arabic,
+            english_translation: word.translation,
+            transliteration: word.transliteration,
+            base: word.base,
             note: word.note || '',
           },
           query: userMessage,
-          translated_output: translatedOutput || '',
+          translated_output: translatedOutput,
           previous_response_id: responseId || null,
         }),
       });
@@ -94,8 +94,8 @@ const ChatPanel = ({ word, translatedOutput, isOpen, onClose }) => {
         <div className="chat-panel-header">
           <div className="chat-panel-title">
             <h3>Ask about this word</h3>
-            {word.word && (
-              <span className="chat-panel-word" dir="rtl">{word.word}</span>
+            {word.arabic && (
+              <span className="chat-panel-word" dir="rtl">{word.arabic}</span>
             )}
             <br></br>
             {word.transliteration && (

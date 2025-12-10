@@ -63,12 +63,7 @@ const Profile = ({ onMenuClick }) => {
       if (!result.user) {
         if (result.error) {
           const errorCode = result.error.code;
-          if (errorCode === 'auth/user-not-found') {
-            // Email doesn't match any existing account
-            setError('Account does not exist. Please sign up first.');
-          } else if (errorCode === 'auth/invalid-credential') {
-            // Firebase now uses this for most bad email/password combinations;
-            // we can't reliably know which part is wrong, so show a safe message that also suggests signing up.
+          if (errorCode === 'auth/invalid-credential') {
             setError('Email or password is incorrect. Please try again or sign up.');
           } else if (errorCode === 'auth/invalid-email') {
             setError('Invalid email address.');
@@ -104,8 +99,6 @@ const Profile = ({ onMenuClick }) => {
           } else {
             setError('Error creating account. Please try again.');
           }
-        } else {
-          setError('Error creating account. Please try again.');
         }
       }
     } catch (err) {
@@ -121,13 +114,13 @@ const Profile = ({ onMenuClick }) => {
     try {
       await signOut(auth);
       // Also clear local auth form state immediately after sign out
-      setEmail('');
-      setPassword('');
-      setError('');
+      // setEmail('');
+      // setPassword('');
+      // setError('');
       setIsSignUp(false);
+      localStorage.removeItem('song_translator_home_state');
     } catch (error) {
       console.error('Error signing out:', error);
-      alert('Error signing out. Please try again.');
     }
 
   };
@@ -139,8 +132,8 @@ const Profile = ({ onMenuClick }) => {
         <div className="profile-content">
           <div className="sign-in-container">
             <div className="sign-in-card">
-              <h2>Welcome to Arabic Songs</h2>
-              <p>Sign in to track your progress and sync your vocabulary across devices.</p>
+              <h2>Welcome to Arabic Learner</h2>
+              <p>Sign in to track your progress.</p>
               <div className="auth-form">
                 <input
                   type="email"

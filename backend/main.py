@@ -4,6 +4,10 @@ import os
 from tools import get_lyrics_deduplicated
 import json
 import re
+import xml.etree.ElementTree as ET
+import logging
+
+logger = logging.getLogger(__name__)
 
 load_dotenv()
 
@@ -41,93 +45,103 @@ The lyrics may contain English words in Latin script; do NOT add a section for t
 Please follow the format given below strictly to structure your response. Don’t add any additional information other than the one specified.
 
 Format:
-<dialect>
-## Dialect: Mention the main dialect only.
-</dialect>
+<dialect>Mention the main dialect only.</dialect>
 
 <ltranslation>
-Transliteration of lyric line
-Equivalent translation of the line in English
+<line>
+<arabic>"The original lyric in Arabic"</arabic>
+<transliteration>Transliteration of lyric line</transliteration>
+<translation>Equivalent translation of the line in English</translation>
+</line>
 </ltranslation>
 
 <wtranslation>
-*Word:* "Arabic text of the word"
-*Translation:* Translation in English only with no explanation
-*Transliteration:* Transliteration of the word
-*Base:* "Arabic text of the base word" (Transliteration of the base word) (Meaning of the base word)
-*Note:* Clearly explain how the suffix/prefix/verb tense/etc. are combined to give the final word. Consider how neighboring words affect the meaning/form of the current word, for example: the current word has a feminine suffix because it describes the next word, which is feminine. You can skip this if a word is the same as the base. You may add contextual/cultural information here. Do not mention complex grammatical terminology.
+<word> 
+<arabic>"Arabic text of the word"</arabic>
+<translation>Translation in English only with no explanation</translation>
+<transliteration>Transliteration of the word</transliteration>
+<base>"Arabic text of the base word" (Transliteration of the base word) (Meaning of the base word)</base>
+<note>Clearly explain how the suffix/prefix/verb tense/etc. are combined to give the final word. Consider how neighboring words affect the meaning/form of the current word, for example: the current word has a feminine suffix because it describes the next word, which is feminine. You can skip this if a word is the same as the base. You may add contextual/cultural information here. Do not mention complex grammatical terminology.</note>
+</word>
 </wtranslation>
 
 Here is a sample response:
-<dialect>
-## Dialect: Levantine
-</dialect>
+<dialect>Levantine</dialect>
 
 <ltranslation>
-## Line-by-line translation and transliteration:
-“ليه متضايقة ليه”
-Leh mitdayiqah leh?
-Why are you upset? Why?
+<line>
+<arabic>“ليه متضايقة ليه”</arabic>
+<transliteration>Leh mitdayiqah leh?</transliteration>
+<translation>Why are you upset? Why?<translation>
+</line>
 
-...
+<line>
+<arabic>"coffee hot احب شاي و"</arabic>
+<transliteration>Ahibb shayy wa hot coffee</transliteration>
+<translation>I love tea and hot coffee</translation>
+</line>
 
-"coffee hot احب شاي و"
-Ahibb shayy wa hot coffee
-I love tea and hot coffee
-
-...
-
-"عيونها بلو"
-Uyoonha bloo
-Her eyes are blue
+<line>
+<arabic>"عيونها بلو"</arabic>
+<transliteration>Uyoonha bloo</transliteration>
+<translation>Her eyes are blue</translation>
+</line>
 
 ...
 </ltranslation>
 
 <wtranslation>
-## Word-by-word translation and transliteration:
-Word: "ليه"
-Translation: why
-Transliteration: leh
-Base: "ليه" (leh) (why)
-Note: "ليه" (leh) is commonly used in Egyptian and Levantine Arabic. It’s the informal, everyday version of the more formal "لماذا" (limadha).
+<word>
+<arabic>"ليه"</arabic>
+<translation>why</translation>
+<transliteration>leh</transliteration>
+<base>"ليه" (leh) (why)</base>
+<note>"ليه" (leh) is commonly used in Egyptian and Levantine Arabic. It’s the informal, everyday version of the more formal "لماذا" (limadha).</note>
+</word>
 
-...
+<word>
+<arabic>"احب"</arabic>
+<translation>I love</translation>
+<transliteration>Ahibb</transliteration>
+<base>"حب" (hubb) (love)</base>
+<note>We add "ا" (a) as the prefix to say "I love".</note>
+</word>
 
-Word: "احب"
-Translation: I love
-Transliteration: Ahibb
-Base: "حب" (hubb) (love)
-Note: We add "ا" (a) as the prefix to say "I love".
+<word>
+<arabic>"شاي"</arabic>
+<translation>tea</translation>
+<transliteration>shayy</transliteration>
+<base>"شاي" (shayy) (tea)</base>
+</word>
 
-Word: "شاي"
-Translation: tea
-Transliteration: shayy
-Base: "شاي" (shayy) (tea)
+<word>
+<arabic>"و"</arabic>
+<translation>and</translation>
+<transliteration>wa</transliteration> 
+<base>"و" (wa) (and)</base>
+</word>
 
-Word: "و"
-Translation: and
-Transliteration: wa 
-Base: "و" (wa) (and)
+<word>
+<arabic>"كيفك"</arabic>
+<translation>how are you</translation>
+<transliteration>keefik</transliteration>
+<base>"كيف" (keef) (how)</base>
+<note>By adding the pronoun suffix ik (for a woman), you get "كيفك" (keefik), which literally means “how you.” Together, it’s the natural Levantine way of saying “How are you?”.</note>
+</word>
 
-Word: "كيفك"
-Translation: how are you
-Transliteration: keefik
-Base: "كيف" (keef) (how)
-Note: By adding the pronoun suffix ik (for a woman), you get "كيفك" (keefik), which literally means “how you.” Together, it’s the natural Levantine way of saying “How are you?”.
+<word>
+<arabic>"بتمشي"</arabic>
+<translation>walks</translation>
+<transliteration>btimshi</transliteration>
+<base>"مشى" (masha) (walked)</base>
+<note>"بتمشي" (btimshi) is a verb with two prefixes: b- (for the present tense) and t- (showing it’s feminine) to match the next word "الدنيا" (id-dunya), which is a feminine noun meaning “the world”.</note>
+</word>
 
-...
-
-Word: "بتمشي"
-Translation: walks
-Transliteration: btimshi
-Base: "مشى" (masha) (walked)
-Note: "بتمشي" (btimshi) is a verb with two prefixes: b- (for the present tense) and t- (showing it’s feminine) to match the next word "الدنيا" (id-dunya), which is a feminine noun meaning “the world”.
-
-Word: "الدنيا"
-Translation: the world
-Transliteration: id-dunya
-Base: "الدنيا" (id-dunya) (the world)
+<word>
+<arabic>"الدنيا"</arabic>
+<translation>the world</translation>
+<transliteration>id-dunya</transliteration>
+<base>"الدنيا" (id-dunya) (the world)</base>
 
 ...
 </wtranslation>
@@ -144,22 +158,93 @@ Below are the translated lyrics:
 
 """
 
+def parse_translation_output(xml_output):
+    """Parse the XML translation output into structured dictionaries."""
+    try:
+        # Wrap in root tag for proper XML parsing
+        wrapped_xml = f"<root>{xml_output}</root>"  # to create main tag ex data
+        root = ET.fromstring(wrapped_xml)
+        
+        # Extract dialect
+        dialect_elem = root.find('dialect') # find gets first child
+        dialect = dialect_elem.text.strip() if dialect_elem is not None else None
+        
+        # Parse line translations
+        ltranslation = []
+        ltrans_section = root.find('ltranslation')
+        if ltrans_section is not None:
+            for line in ltrans_section.findall('line'): # gets all children of current tag
+                arabic_elem = line.find('arabic')
+                transliteration_elem = line.find('transliteration')
+                translation_elem = line.find('translation')
+                
+                ltranslation.append({
+                    'arabic': arabic_elem.text.strip() if arabic_elem is not None else '',
+                    'transliteration': transliteration_elem.text.strip() if transliteration_elem is not None else '',
+                    'translation': translation_elem.text.strip() if translation_elem is not None else ''
+                })
+        
+        # Parse word translations
+        wtranslation = []
+        wtrans_section = root.find('wtranslation')
+        if wtrans_section is not None:
+            for word in wtrans_section.findall('word'):
+                arabic_elem = word.find('arabic')
+                translation_elem = word.find('translation')
+                transliteration_elem = word.find('transliteration')
+                base_elem = word.find('base')
+                note_elem = word.find('note')
+                
+                wtranslation.append({
+                    'arabic': arabic_elem.text.strip() if arabic_elem is not None else '',
+                    'translation': translation_elem.text.strip() if translation_elem is not None else '',
+                    'transliteration': transliteration_elem.text.strip() if transliteration_elem is not None else '',
+                    'base': base_elem.text.strip() if base_elem is not None else '',
+                    'note': note_elem.text.strip() if note_elem is not None else ''
+                })
+        
+        return {
+            'dialect': dialect,
+            'ltranslation': ltranslation,
+            'wtranslation': wtranslation
+        }
+    
+    except Exception:
+        logger.exception("Error parsing translation for display.")
+        return None
+
 def contains_arabic(text):
     """Check if text contains at least one Arabic character."""
     # Main Arabic Unicode range
     arabic_pattern = re.compile(r'[\u0600-\u06FF]')
     return bool(arabic_pattern.search(text))
 
+def strip_xml_tags(xml_text):
+    """Remove all XML tags from text, keeping only the content."""
+    try:
+        # Wrap in root tag for proper XML parsing
+        wrapped_xml = f"<root>{xml_text}</root>"
+        root = ET.fromstring(wrapped_xml)
+        # Use itertext() to extract all text content
+        text_content = ''.join(root.itertext())
+        # Clean up extra whitespace
+        cleaned_text = re.sub(r'\n\s*\n', '\n\n', text_content)
+        return cleaned_text.strip()
+    except Exception:
+        logger.exception("Error removing XML tags from translation.")
+        return None
+
 def translate(artist_name, song_name):
     try:
-    
         lyrics = get_lyrics_deduplicated(artist_name, song_name)
         
         if lyrics is None:
-            return {"error": "Sorry there was an error fetching the lyrics. Please make sure you entered the correct artist and song."}
+            logger.info(f"Lyrics not found for artist: {artist_name}, song: {song_name}")
+            return {"error": "Sorry, we couldn't find the lyrics. Please check the artist and song name."}
         
         if not contains_arabic(lyrics):
-            return {"error": "Please enter an Arabic song to translate."}
+            logger.info(f"Non-Arabic lyrics detected for artist: {artist_name}, song: {song_name}")
+            return {"error": "This doesn't appear to be an Arabic song. Please enter an Arabic song to translate."}
         
         input_list = [
             {"role": "user", "content": lyrics}
@@ -178,39 +263,53 @@ def translate(artist_name, song_name):
         # Filter out "---" from the output before returning
         translated_output = re.sub(r'---+', '', translated_output)
         
-        # Return the full output with XML tags so frontend can parse it properly
-        return translated_output
-    except Exception as e:
-        print(str(e))
-        return {"error": "Something went wrong :( please try again"}
+        # Parse the XML output into structured dictionary
+        parsed_output = parse_translation_output(translated_output)
+        
+        if parsed_output is None:
+            return {"error": "We encountered an issue processing the translation. Please try again."}
+        
+        # Strip XML tags from raw output
+        raw_output_no_tags = strip_xml_tags(translated_output)
+        
+        if raw_output_no_tags is None:
+            return {"error": "We encountered an issue processing the translation. Please try again."}
+
+
+        return {
+            **parsed_output,
+            'raw_output': raw_output_no_tags  
+        }
+    except Exception:
+        logger.exception(f"Error processing translation.")
+        return {"error": "Something went wrong. Please try again later."}
 
 def q_and_a(query, context, translated_output, previous_response_id):
-    formatted_instructions = instructions_for_q_and_a.format(translated_output=translated_output)
-    
-    user_input = context + "\n\n" + query
-    
-    # if first_request:
-    #     response_q_and_a = client.responses.create(
-    #         model="gpt-4.1",
-    #         instructions=instructions_for_q_and_a,
-    #         max_output_tokens=500,
-    #         temperature=0,
-    #         input=[{"role": "user", "content": user_input}]
-    #     )
-    #     first_request=False
-    # else:
-    response_q_and_a = client.responses.create(
-    model="gpt-4.1",
-    instructions=formatted_instructions,
-    previous_response_id=previous_response_id,
-    max_output_tokens=500,
-    temperature=0,
-    input=[{"role": "user", "content": user_input}]
-    )
-    
-    previous_response_id = response_q_and_a.id
+    try:
+        formatted_instructions = instructions_for_q_and_a.format(translated_output=translated_output)
         
-    return previous_response_id, response_q_and_a.output_text
+        user_input = context + "\n\n" + query
+        
+        response_q_and_a = client.responses.create(
+            model="gpt-4.1",
+            instructions=formatted_instructions,
+            previous_response_id=previous_response_id,
+            max_output_tokens=500,
+            temperature=0,
+            input=[{"role": "user", "content": user_input}]
+        )
+        
+        previous_response_id = response_q_and_a.id
+        
+        return {
+            "response_id": previous_response_id, 
+            "response": response_q_and_a.output_text
+        }
+    except Exception:
+        logger.exception("Error processing chat.")
+        return {
+            "error": "Sorry, I couldn't process your question. Please try again."
+        }
     
     
 # input_list += response.output

@@ -7,8 +7,7 @@ export const signUp = async (email, password) => {
         const user = userCredential.user;
         return { user, error: null };
     } catch (error) {
-        console.log(error.code);
-        console.log(error.message);
+        console.log(error);
         return { user: null, error }; 
     }
 }

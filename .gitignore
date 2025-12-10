@@ -11,3 +11,6 @@ wheels/
 
 .env
 .DS_store
+
+# Log files
+*.log

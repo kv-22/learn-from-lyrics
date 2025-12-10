@@ -41,7 +41,7 @@ export const addToVocabulary = async (userId = null, word) => {
     const vocabulary = await getVocabulary(userId);
     const exists = vocabulary.some(
       (item) =>
-        item.english.toLowerCase() === word.english.toLowerCase() &&
+        item.translation.toLowerCase() === word.translation.toLowerCase() &&
         item.arabic === word.arabic
     );
 
@@ -49,7 +49,6 @@ export const addToVocabulary = async (userId = null, word) => {
       const newWordRef = push(ref(db, 'users/' + userId + '/vocab'));
       await set(newWordRef, {
         arabic: word.arabic,
-        english: word.english,
         translation: word.translation,
         transliteration: word.transliteration,
         base: word.base,
