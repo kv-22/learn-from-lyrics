@@ -22,4 +22,5 @@ COPY --from=deps /usr/src/app/node_modules ./node_modules
 
 EXPOSE 5173
 
-CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0"]
+CMD ["sh", "-c", "npm run dev -- --host 0.0.0.0 --port ${PORT:-5173}"]
+
