@@ -53,6 +53,7 @@ const Home = ({ onMenuClick }) => {
     }
   }, []);
 
+  const backendUrl = import.meta.env.VITE_BACKEND_URL;
 
   const handleSearch = async () => {
     // Validate required fields
@@ -68,12 +69,11 @@ const Home = ({ onMenuClick }) => {
 
     setLoading(true);
     setError(null); // Clear any previous error
-    
+
     try {
       // Call the FastAPI backend
       // Use window.location.hostname to dynamically get the current host
-      const apiHost = window.location.hostname;
-      const response = await fetch(`http://${apiHost}:8000/get_translation`, {
+      const response = await fetch(`${backendUrl}/get_translation`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

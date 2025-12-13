@@ -8,6 +8,7 @@ const ChatPanel = ({ word, translatedOutput, isOpen, onClose }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [responseId, setResponseId] = useState(null);
   const messagesEndRef = useRef(null);
+  const backendUrl = import.meta.env.VITE_BACKEND_URL;
 
   // Reset state when word changes or panel closes
   useEffect(() => {
@@ -34,8 +35,7 @@ const ChatPanel = ({ word, translatedOutput, isOpen, onClose }) => {
     setIsLoading(true);
 
     try {
-      const apiHost = window.location.hostname;
-      const response = await fetch(`http://${apiHost}:8000/chat`, {
+      const response = await fetch(`${backendUrl}/chat`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
