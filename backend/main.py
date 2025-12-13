@@ -15,27 +15,6 @@ OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
 client = OpenAI(api_key=OPENAI_API_KEY)
 
-# tools = [{
-#     "type": "function",
-#     "name": "get_lyrics",
-#     "description": "Get lyrics of a song for translation.",
-#     "parameters": {
-#         "type": "object",
-#         "properties": {
-#             "artist_name": {
-#                 "type": "string",
-#                 "description": "Name of the artist of the song."
-#             },
-#             "song_name": {
-#                 "type": "string",
-#                 "description": "Name of the song."
-#             },
-#         },
-#         "required": ["artist_name", "song_name"]
-#     },
-# }]
-
-
 instructions = """Your job is to translate the lyrics of Arabic songs into English for language learning purposes. You should be culturally relevant and beginner-friendly.
 
 First, recognize the main dialect. Then provide a line-by-line translation of the song and a word-by-word translation, considering the dialect. The word-by-word translation should also include a breakdown of the word, highlighting its basic usage form, that is, how it appears without gender/pronoun/verb/etc. additions. You should also provide transliteration to clarify how the words are pronounced. Always provide the transliteration next to Arabic words, as the user may not know how to read them.
@@ -311,41 +290,3 @@ def q_and_a(query, context, translated_output, previous_response_id):
             "error": "Sorry, I couldn't process your question. Please try again."
         }
     
-    
-# input_list += response.output
-
-# for item in response.output: 
-#     if item.type == "function_call":
-#         if item.name == "get_lyrics":
-#             args = json.loads(item.arguments)
-#             print(args)
-#             lyrics = get_lyrics(**args)
-#             function_call_output = {
-#                 "type": "function_call_output",
-#                 "call_id": item.call_id,
-#                 "output": json.dumps({
-#                     "lyrics": lyrics
-#                 }, ensure_ascii=False)   
-#             }
-#             input_list.append(function_call_output)
-
-# print(input_list)
-
-# response = client.responses.create(
-#     model="gpt-5-nano",
-#     instructions=instructions,
-#     input=input_list
-# )
-            
-
-# def main():
-#     print("Hello from song-translator!")
-#     # print(response.output_text)
-#     # print(translated_output)
-    
-            
-#     # print(response_q_and_a.output_text)
-
-
-# if __name__ == "__main__":
-#     main()

@@ -66,10 +66,8 @@ async def chat(request: ChatRequest):
     try:
         word = request.word
         context = "Word:" + word.arabic_text + "\nTranslation:" + word.english_translation + "\nTransliteration:" + word.transliteration + "\nBase:" + word.base + "\nNote:" + word.note
-        print(context)
         previous_response_id = request.previous_response_id if request.previous_response_id else None
         answer = q_and_a(query=request.query, context=context, translated_output=request.translated_output, previous_response_id=previous_response_id)
-        print(answer)
         return answer
     except Exception:
         logger.exception('Error in chat endpoint.')
