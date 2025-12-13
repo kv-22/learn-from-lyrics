@@ -17,19 +17,19 @@ docker compose up --build
 
 The app will then be accessible at http://localhost:5173/
 
-# Tech stack:
+### Tech stack:
 - FastAPI for backend
 - Firebase for authentication and database
 - React + Vite for frontend
 
-# What did I learn?
+### What did I learn?
 - Some prompting techniques
 - Some docker commands
 - Some stuff about firebase, logging, and uv
 - Vibe coding is not just vibes
 - Copyright is annoying
 
-# Remaining work:
+### Remaining work:
 - [ ] Change input handling 
 - [ ] Reduce latency
 - [ ] Deploy
