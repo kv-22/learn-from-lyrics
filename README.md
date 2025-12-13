@@ -7,11 +7,13 @@ OPENAI_API_KEY
 GENIUS_ACCESS_TOKEN (get it from [here](https://genius.com/signup))
 
 ## How to run:
-```git clone https://github.com/kv-22/learn-from-lyrics.git
+```
+git clone https://github.com/kv-22/learn-from-lyrics.git
 cd learn-from-lyrics
 export OPENAI_API_KEY="yourapikey"
 export GENIUS_ACCESS_TOKEN="yourtoken"
-docker compose up --build```
+docker compose up --build
+```
 
 The app will then be accessible at http://localhost:5173/
 
