@@ -145,7 +145,7 @@ const Vocabulary = ({ onMenuClick }) => {
                 <div key={item.id} className="vocabulary-item">
                   <div className="vocabulary-item-content">
                     <div className="vocabulary-word">
-                      <span className="vocabulary-english">{item.english}</span>
+                      <span className="vocabulary-english">{item.translation}</span>
                       {item.arabic && item.arabic.trim() && (
                         <span className="vocabulary-arabic">{item.arabic}</span>
                       )}
