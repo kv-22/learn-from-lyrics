@@ -190,9 +190,7 @@ const Home = ({ translation, setTranslation, songLyrics, setLyrics, onMenuClick 
             <div className="translation-content">
               <h3 className="translation-section-title">Dialect: {translation.dialect}</h3>
               
-              
               <h3 className="translation-section-title">Line-by-line Translation</h3>
-              
               
               <div className="translation-text" id="translation-text">
                 {translation.lineTranslations && translation.lineTranslations.length > 0 ? (

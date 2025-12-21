@@ -15,8 +15,6 @@ RUN adduser \
     --no-create-home \
     --uid "${UID}" \
     appuser
-    
-RUN mkdir -p /app/logs && chown appuser:appuser /app/logs
 
 USER appuser
 

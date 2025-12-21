@@ -11,7 +11,7 @@ logging.basicConfig(
     format="{asctime} - {name} - {levelname} - {message}",
     style="{",
     handlers=[
-        logging.FileHandler("./logs/app.log",  mode="a", encoding="utf-8"),
+        # logging.FileHandler("./logs/app.log",  mode="a", encoding="utf-8"),
         logging.StreamHandler()
     ]
 )

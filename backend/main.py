@@ -9,7 +9,7 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-load_dotenv()
+# load_dotenv()
 
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
