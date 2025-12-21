@@ -1,7 +1,7 @@
 from openai import OpenAI
 from dotenv import load_dotenv
 import os
-from tools import get_lyrics_deduplicated
+from tools import deduplicate_verses
 import json
 import re
 import xml.etree.ElementTree as ET
@@ -213,16 +213,15 @@ def strip_xml_tags(xml_text):
         logger.exception("Error removing XML tags from translation.")
         return None
 
-def translate(artist_name, song_name):
+def translate(song_lyrics):
     try:
-        lyrics = get_lyrics_deduplicated(artist_name, song_name)
-        
+        lyrics = deduplicate_verses(song_lyrics)
+        print(lyrics)
         if lyrics is None:
-            logger.info(f"Lyrics not found for artist: {artist_name}, song: {song_name}")
-            return {"error": "Sorry, we couldn't find the lyrics. Please check the artist and song name."}
+            return {"error": "Sorry, we couldn't process the entered lyrics. Please check the lyrics."}
         
         if not contains_arabic(lyrics):
-            logger.info(f"Non-Arabic lyrics detected for artist: {artist_name}, song: {song_name}")
+            logger.info(f"Non-Arabic lyrics detected for: {song_lyrics}")
             return {"error": "This doesn't appear to be an Arabic song. Please enter an Arabic song to translate."}
         
         input_list = [

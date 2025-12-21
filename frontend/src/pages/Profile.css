@@ -40,6 +40,7 @@
 }
 
 .sign-in-button {
+  margin-top: 10px;
   width: 100%;
   padding: 14px;
   background-color: #4A90E2;
@@ -71,6 +72,7 @@
 }
 
 .auth-input {
+  margin-top: 5px;
   width: 100%;
   padding: 12px;
   border: 1px solid #ddd;

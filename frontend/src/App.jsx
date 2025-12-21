@@ -8,6 +8,8 @@ import './App.css';
 
 function App() {
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [translation, setTranslation] = useState(null);
+  const [songLyrics, setLyrics] = useState('');
 
   const toggleDrawer = () => {
     setDrawerOpen(!drawerOpen);
@@ -25,7 +27,12 @@ function App() {
         <Routes>
           <Route
             path="/"
-            element={<Home onMenuClick={toggleDrawer} />}
+            element={<Home 
+              translation={translation}
+              setTranslation={setTranslation}
+              songLyrics={songLyrics}
+              setLyrics={setLyrics}
+              onMenuClick={toggleDrawer} />}
           />
           <Route
             path="/vocabulary"

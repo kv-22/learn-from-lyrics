@@ -21,8 +21,9 @@ logging.getLogger('httpx').setLevel(logging.WARNING)
 logger = logging.getLogger(__name__)
 
 class Song(BaseModel):
-    artist_name: str
-    song_name: str
+    # artist_name: str
+    # song_name: str
+    song_lyrics: str
 
 class Word(BaseModel):
     arabic_text: str
@@ -53,7 +54,7 @@ app.add_middleware(
 @app.post("/get_translation")
 async def get_translation(song: Song):
     try:
-        translation = translate(artist_name=song.artist_name, song_name=song.song_name)
+        translation = translate(song_lyrics=song.song_lyrics)
         return translation
     except Exception:
         logger.exception("Error in translation endpoint.")

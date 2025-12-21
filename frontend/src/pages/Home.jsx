@@ -8,62 +8,71 @@ import './Home.css';
 // Format song/artist names for display:
 // - Trim whitespace
 // - If the text starts with an English letter, title-case each English word
-const formatDisplayName = (name) => {
-  if (!name) return '';
-  const trimmed = name.trim();
-  if (!trimmed) return '';
+// const formatDisplayName = (name) => {
+//   if (!name) return '';
+//   const trimmed = name.trim();
+//   if (!trimmed) return '';
 
-  const firstChar = trimmed[0];
-  if (/[A-Za-z]/.test(firstChar)) {
-    return trimmed
-      .split(' ')
-      .map((word) => {
-        if (!word) return '';
-        const ch = word[0];
-        if (/[A-Za-z]/.test(ch)) {
-          return ch.toUpperCase() + word.slice(1);
-        }
-        return word;
-      })
-      .join(' ');
-  }
+//   const firstChar = trimmed[0];
+//   if (/[A-Za-z]/.test(firstChar)) {
+//     return trimmed
+//       .split(' ')
+//       .map((word) => {
+//         if (!word) return '';
+//         const ch = word[0];
+//         if (/[A-Za-z]/.test(ch)) {
+//           return ch.toUpperCase() + word.slice(1);
+//         }
+//         return word;
+//       })
+//       .join(' ');
+//   }
 
-  return trimmed;
-};
+//   return trimmed;
+// };
 
-const Home = ({ onMenuClick }) => {
-  const [songName, setSongName] = useState('');
-  const [artistName, setArtistName] = useState('');
-  const [translation, setTranslation] = useState(null);
+const Home = ({ translation, setTranslation, songLyrics, setLyrics, onMenuClick }) => {
+
+  // const [songName, setSongName] = useState('');
+  // const [artistName, setArtistName] = useState('');
+  // const [songLyrics, setLyrics] = useState('');
+  // const [translation, setTranslation] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
   // Restore last search/translation from localStorage on mount
-  useEffect(() => {
-    try {
-      const savedState = localStorage.getItem('song_translator_home_state');
-      if (savedState) {
-        const parsed = JSON.parse(savedState);
-        if (parsed.songName) setSongName(parsed.songName);
-        if (parsed.artistName) setArtistName(parsed.artistName);
-        if (parsed.translation) setTranslation(parsed.translation);
-      }
-    } catch (error) {
-      console.error('Error restoring Home state from localStorage', error);
-    }
-  }, []);
+  // useEffect(() => {
+  //   try {
+  //     const savedState = localStorage.getItem('song_translator_home_state');
+  //     if (savedState) {
+  //       const parsed = JSON.parse(savedState);
+  //       if (parsed.songName) setSongName(parsed.songName);
+  //       if (parsed.artistName) setArtistName(parsed.artistName);
+  //       if (parsed.translation) setTranslation(parsed.translation);
+  //     }
+  //   } catch (error) {
+  //     console.error('Error restoring Home state from localStorage', error);
+  //   }
+  // }, []);
+
+  
 
   const backendUrl = import.meta.env.VITE_BACKEND_URL;
 
   const handleSearch = async () => {
     // Validate required fields
-    if (!songName.trim()) {
-      setError('Please enter a song name');
-      return;
-    }
+    // if (!songName.trim()) {
+    //   setError('Please enter a song name');
+    //   return;
+    // }
 
-    if (!artistName.trim()) {
-      setError('Please enter an artist name');
+    // if (!artistName.trim()) {
+    //   setError('Please enter an artist name');
+    //   return;
+    // }
+
+    if (!songLyrics.trim()) {
+      setError('Please enter the lyrics.');
       return;
     }
 
@@ -79,8 +88,9 @@ const Home = ({ onMenuClick }) => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          artist_name: artistName.trim(),
-          song_name: songName.trim(),
+          // artist_name: artistName.trim(),
+          // song_name: songName.trim(),
+          song_lyrics: songLyrics.trim()
         }),
       });
 
@@ -95,40 +105,20 @@ const Home = ({ onMenuClick }) => {
         setError(data.error);
         setTranslation(null); // Clear any previous translation
         setLoading(false);
-
-        try {
-          localStorage.removeItem('song_translator_home_state');
-        } catch (error) {
-          console.error('Error clearing localStorage', error);
-        }
         return;
       }
       
       const newTranslation = {
-        song: formatDisplayName(songName),
-        artist: formatDisplayName(artistName),
+        // song: formatDisplayName(songName),
+        // artist: formatDisplayName(artistName),
         dialect: data.dialect || 'Unknown',
         lineTranslations: data.ltranslation || [],
         wordTranslations: data.wtranslation || [], 
         rawOutput: data.raw_output || '', 
       };
       
-
       setTranslation(newTranslation);
 
-      // Persist state so navigating away and back keeps the content
-      try {
-        localStorage.setItem(
-          'song_translator_home_state',
-          JSON.stringify({
-            songName: songName.trim(),
-            artistName: artistName.trim(),
-            translation: newTranslation,
-          })
-        );
-      } catch (error) {
-        console.error('Error saving Home state to localStorage', error);
-      }
     } catch (error) {
       console.error('Error fetching translation:', error);
     } finally {
@@ -154,34 +144,16 @@ const Home = ({ onMenuClick }) => {
               <circle cx="11" cy="11" r="8"></circle>
               <path d="m21 21-4.35-4.35"></path>
             </svg>
-            <input
-              type="text"
+            <textarea
               className="search-input"
-              placeholder="Search for a song..."
-              value={songName}
-              onChange={(e) => setSongName(e.target.value)}
+              value={songLyrics}
+              onChange={(e) => setLyrics(e.target.value)}
               onKeyPress={handleKeyPress}
-            />
-          </div>
-          
-          <div className="search-container">
-            <svg className="search-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <circle cx="11" cy="11" r="8"></circle>
-              <path d="m21 21-4.35-4.35"></path>
-            </svg>
-            <input
-              type="text"
-              className="search-input"
-              placeholder="Artist name"
-              value={artistName}
-              onChange={(e) => setArtistName(e.target.value)}
-              onKeyPress={handleKeyPress}
-              required
             />
           </div>
 
           <button className="search-button" onClick={handleSearch} disabled={loading}>
-            {loading ? 'Searching...' : 'Search'}
+            {loading ? 'Translating...' : 'Translate'}
           </button>
         </div>
 
@@ -194,8 +166,8 @@ const Home = ({ onMenuClick }) => {
                 <circle cx="18" cy="16" r="3"></circle>
               </svg>
             </div>
-            <h2>Search for Arabic Songs</h2>
-            <p>Type the name of a song in the search bar to see its lyrics with translations.</p>
+            <h2>Translate Arabic Songs</h2>
+            <p>Paste the lyrics of a song to see its translation.</p>
           </div>
         )}
 
@@ -214,19 +186,6 @@ const Home = ({ onMenuClick }) => {
 
         {translation && (
           <div className="translation-section">
-            <div className="song-card">
-              <div className="song-icon">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#4A90E2" strokeWidth="2">
-                  <path d="M9 18V5l12-2v13"></path>
-                  <circle cx="6" cy="18" r="3"></circle>
-                  <circle cx="18" cy="16" r="3"></circle>
-                </svg>
-              </div>
-              <div className="song-info">
-                <div className="song-name">{translation.song}</div>
-                <div className="song-artist">{translation.artist}</div>
-              </div>
-            </div>
 
             <div className="translation-content">
               <h3 className="translation-section-title">Dialect: {translation.dialect}</h3>
